@@ -17,7 +17,4 @@ public class DBConfig {
             + LOG_DT + " date not null, "
             + TAG + " text not null, "
             + MSG + " text);";
-
-
-
 }

@@ -7,8 +7,11 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.hyundai.logSDK.util.DBHelper;
+import com.hyundai.logSDK.util.HttpHelper;
 
-public class HLog {
+import org.json.JSONObject;
+
+public class HLog implements HttpHelper.HttpListener {
 
     private static String TAG = "LOG_SDK";
 
@@ -18,37 +21,60 @@ public class HLog {
 
     BackgroundTask backgroundTask;
 
-    static DBHelper dbHelper;
+    final DBHelper dbHelper;
+    final HttpHelper httpHelper;
 
-
-    private HLog(){}
-
-    public HLog setInit(Context context){
-        context = context;
-        backgroundTask = new BackgroundTask();
+    private HLog(){
 
         // DB
         dbHelper = new DBHelper(context);
         dbHelper.open();
         dbHelper.create();
 
-        return this;
+        // Network
+        httpHelper = new HttpHelper();
+        httpHelper.setHttpListener(new HttpHelper.HttpListener() {
+            @Override
+            public void onResponse(int resCode, JSONObject res) {
+
+            }
+        });
     }
 
-    public static int d(Context context, String tag, String msg){
+    private static void init(Context context){
         if(null == instance){
             instance = new HLog();
         }
-
-        // DB
-        dbHelper = new DBHelper(context);
-        dbHelper.open();
-        dbHelper.create();
-
-        return println(0, tag, msg);
     }
 
-    public static int println(int DEBUG, String tag, String msg){
+    public static int d(Context context, String tag, String msg){
+
+        init(context);
+
+        return instance.save(0, tag, msg);
+    }
+
+    public static void send(Context context){
+
+        init(context);
+
+        if(null == instance.dbHelper) return; // 앱을 종료 후 send() 부터 실행하면 null인 현상이 있음
+
+        LogData hlog = new LogData();
+        Cursor csr = instance.dbHelper.selectColumns();
+        while(csr.moveToNext()){
+            String id = csr.getString(0);
+            String dt = csr.getString(1);
+            String tag = csr.getString(2);
+            String contents = csr.getString(3);
+
+            hlog.setLog(id, dt, tag, contents);
+            Log.d(TAG, "hlog.show(): " + hlog);
+            instance.httpHelper.doPost(null);
+        }
+    }
+
+    private int save(int DEBUG, String tag, String msg){
         dbHelper.insert(tag, msg);
         show();
         return 0;
@@ -65,7 +91,7 @@ public class HLog {
         dbHelper.insert(tag, text);
     }
 
-    public static void show(){
+    public void show(){
 
         if(null == dbHelper) return; // 앱을 종료 후 show 부터 실행하면 null인 현상이 있음
 
@@ -93,7 +119,15 @@ public class HLog {
     public void bgToast(){
         backgroundTask.execute();
     }
-//    https://velog.io/@haero_kim/Android-AsyncTask-%EA%B0%80-%EB%96%A0%EB%82%98%EA%B0%84-%EC%9D%B4%EC%9C%A0
+
+    @Override
+    public void onResponse(int resCode, JSONObject res) {
+
+
+
+    }
+
+    //    https://velog.io/@haero_kim/Android-AsyncTask-%EA%B0%80-%EB%96%A0%EB%82%98%EA%B0%84-%EC%9D%B4%EC%9C%A0
     class BackgroundTask extends AsyncTask<Integer, Integer, Integer> {
         @Override
         protected Integer doInBackground(Integer... integers) {

@@ -1,11 +1,15 @@
 package com.hyundai.logSDK;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class LogData {
 
     String logId;
     String logDt;
     String tag;
     String msg;
+    int result;
 
     public String getLogId() {
         return logId;
@@ -39,11 +43,35 @@ public class LogData {
         this.msg = msg;
     }
 
-    public void setLog(String logId, String logDt, String tag, String msg){
+    public int getResult() {
+        return result;
+    }
+
+    public void setResult(int result) {
+        this.result = result;
+    }
+
+    public void setLog(String logId, String logDt, String tag, String msg, int result){
         this.logId = logId;
         this.logDt = logDt;
         this.tag = tag;
         this.msg = msg;
+        this.result = result;
+    }
+
+    public JSONObject toJSON(){
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put("LOG_ID", this.logId);
+            json.put("LOG_DT", this.logDt);
+            json.put("TAG",this.tag);
+            json.put("MSG",this.msg);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return json;
     }
 
     @Override
@@ -53,6 +81,7 @@ public class LogData {
                 ", logDt='" + logDt + '\'' +
                 ", tag='" + tag + '\'' +
                 ", msg='" + msg + '\'' +
+                ", result='" + result + '\'' +
                 '}';
     }
 }

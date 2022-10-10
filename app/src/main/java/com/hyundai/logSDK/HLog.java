@@ -9,10 +9,13 @@ import android.widget.Toast;
 import com.hyundai.logSDK.util.DBHelper;
 import com.hyundai.logSDK.util.network.HttpHelper;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HLog implements HttpHelper.HttpListener {
@@ -34,14 +37,6 @@ public class HLog implements HttpHelper.HttpListener {
 
         // Network
         httpHelper = new HttpHelper();
-        /*
-        httpHelper.setHttpListener(new HttpHelper.HttpListener() {
-            @Override
-            public void onResponse(int resCode, JSONObject res) {
-
-            }
-        });
-         */
     }
 
     private static void init(Context context){
@@ -96,20 +91,33 @@ public class HLog implements HttpHelper.HttpListener {
 
         init(context);
 
-        if(null == instance.dbHelper) return; // 앱을 종료 후 send() 부터 실행하면 null인 현상이 있음
+        if(null == instance || null == instance.dbHelper) return; // 앱을 종료 후 show 부터 실행하면 null인 현상이 있음
 
-        LogData hlog = new LogData();
+
+        JSONArray jsonArr = new JSONArray();
         Cursor csr = instance.dbHelper.selectColumns();
         while(csr.moveToNext()){
+            LogData hLog = new LogData();
             String id = csr.getString(0);
             String dt = csr.getString(1);
             String tag = csr.getString(2);
-            String contents = csr.getString(3);
+            String msg = csr.getString(3);
+            int result = csr.getInt(4);
+            hLog.setLog(id, dt, tag, msg, result);
 
-            hlog.setLog(id, dt, tag, contents);
-            Log.d(TAG, "hlog.show(): " + hlog);
-            instance.httpHelper.doPost(null);
+            jsonArr.put(hLog.toJSON());
         }
+
+        JSONObject reqJson = new JSONObject();
+        try {
+            reqJson.put("LOG_LIST", jsonArr);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Log.d(TAG, "JSON:" + reqJson.toString());
+        instance.httpHelper.setHttpListener(instance);
+        instance.httpHelper.doPost(reqJson);
     }
 
     private int save(int DEBUG, String tag, String msg){
@@ -118,31 +126,24 @@ public class HLog implements HttpHelper.HttpListener {
         return 0;
     }
 
-//    public static HLog getInstance(){
-//        if(null == instance){
-//            instance = new HLog();
-//        }
-//        return instance;
-//    }
-
     public void log(String tag, String text){
         dbHelper.insert(tag, text);
     }
 
-    public void show(){
+    public static void show(){
 
-        if(null == dbHelper) return; // 앱을 종료 후 show 부터 실행하면 null인 현상이 있음
+        if(null == instance || null == instance.dbHelper) return; // 앱을 종료 후 show 부터 실행하면 null인 현상이 있음
 
         LogData hlog = new LogData();
-        Cursor csr = dbHelper.selectColumns();
+        Cursor csr = instance.dbHelper.selectColumns();
         while(csr.moveToNext()){
             String id = csr.getString(0);
             String dt = csr.getString(1);
             String tag = csr.getString(2);
-            String contents = csr.getString(3);
-
-            hlog.setLog(id, dt, tag, contents);
-            Log.d(TAG, "hlog.show(): " + hlog);
+            String msg = csr.getString(3);
+            int result = csr.getInt(4);
+            hlog.setLog(id, dt, tag, msg, result);
+            Log.d(TAG, "hlog.show(): " + hlog.toString());
         }
     }
 

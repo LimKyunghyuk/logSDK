@@ -25,12 +25,11 @@ public class MainActivity extends AppCompatActivity {
 //        LogManager.getInstance().setContext(this).toast();
 //        LogManager.getInstance().setContext(this).bgToast();
 
-        Button btn1 = (Button) findViewById(R.id.btn1);
-        btn1.setOnClickListener(new View.OnClickListener() {
+        ((Button) findViewById(R.id.btn1)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getApplicationContext(), "send()", Toast.LENGTH_SHORT).show();
-                HLog.send(getApplicationContext());
+                HLog.show();
             }
         });
 
@@ -61,12 +60,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button btn5 = (Button) findViewById(R.id.btn5);
-        btn5.setOnClickListener(new View.OnClickListener() {
+        ((Button) findViewById(R.id.btn5)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getApplicationContext(), "btn5", Toast.LENGTH_SHORT).show();
-                HLog.d(getApplicationContext(), "LOG_TEST", "5>" + cnt++);
+                HLog.send(getApplicationContext());
             }
         });
 

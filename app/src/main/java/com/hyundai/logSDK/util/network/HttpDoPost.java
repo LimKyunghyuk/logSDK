@@ -19,7 +19,7 @@ public class HttpDoPost extends Thread{
 
     final String TAG = "LOG_SDK";
 
-    public String CALL_SEVER_URL = "http://yorsild.dothome.co.kr/call.php";
+    public String CALL_SEVER_URL = "http://yorsild.dothome.co.kr/log.php";
     public int TIME_OUT = 3000;
     HttpHelper.HttpListener receiver;
     Handler handler;
@@ -87,9 +87,10 @@ public class HttpDoPost extends Thread{
                 conn.disconnect();
             }
 
+            Log.d(TAG, "res : " + res);
+
             // 결과값 Message에 담아서 반납
             Message msg = handler.obtainMessage();
-
             JSONObject responseJSON = null;
             try {
                 responseJSON = new JSONObject(res);

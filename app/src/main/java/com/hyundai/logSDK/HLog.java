@@ -7,9 +7,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.hyundai.logSDK.util.DBHelper;
-import com.hyundai.logSDK.util.HttpHelper;
+import com.hyundai.logSDK.util.network.HttpHelper;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class HLog implements HttpHelper.HttpListener {
 
@@ -17,14 +21,11 @@ public class HLog implements HttpHelper.HttpListener {
 
     private static HLog instance;
     private static Context context;
-    private LogData hlog;
-
-    BackgroundTask backgroundTask;
 
     final DBHelper dbHelper;
     final HttpHelper httpHelper;
 
-    private HLog(){
+    private HLog(Context context){
 
         // DB
         dbHelper = new DBHelper(context);
@@ -33,25 +34,62 @@ public class HLog implements HttpHelper.HttpListener {
 
         // Network
         httpHelper = new HttpHelper();
+        /*
         httpHelper.setHttpListener(new HttpHelper.HttpListener() {
             @Override
             public void onResponse(int resCode, JSONObject res) {
 
             }
         });
+         */
     }
 
     private static void init(Context context){
         if(null == instance){
-            instance = new HLog();
+            instance = new HLog(context);
         }
     }
 
     public static int d(Context context, String tag, String msg){
 
         init(context);
-
         return instance.save(0, tag, msg);
+    }
+
+    public static int httpDoGet(Context context, String tag, String msg){
+
+        init(context);
+        return instance.httpDoGet(tag, msg);
+    }
+
+    public int httpDoGet(String tag, String msg){
+        Log.d(TAG, "httpDoGet()");
+        Map<String, String> params = new HashMap<>();
+        params.put(tag,msg);
+        instance.httpHelper.setHttpListener(this);
+        instance.httpHelper.doGet(params);
+        return 0;
+    }
+
+    public static int httpDoPost(Context context, String tag, String msg){
+
+        init(context);
+        return instance.httpDoPost(tag, msg);
+    }
+
+    public int httpDoPost(String tag, String msg){
+        Log.d(TAG, "httpDoPost()");
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put(tag, msg);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        instance.httpHelper.setHttpListener(this);
+        instance.httpHelper.doPost(json);
+        return 0;
     }
 
     public static void send(Context context){
@@ -80,12 +118,12 @@ public class HLog implements HttpHelper.HttpListener {
         return 0;
     }
 
-    public static HLog getInstance(){
-        if(null == instance){
-            instance = new HLog();
-        }
-        return instance;
-    }
+//    public static HLog getInstance(){
+//        if(null == instance){
+//            instance = new HLog();
+//        }
+//        return instance;
+//    }
 
     public void log(String tag, String text){
         dbHelper.insert(tag, text);
@@ -114,36 +152,9 @@ public class HLog implements HttpHelper.HttpListener {
         Toast.makeText(context, "Hello", Toast.LENGTH_SHORT).show();
     }
 
-
-
-    public void bgToast(){
-        backgroundTask.execute();
-    }
-
     @Override
     public void onResponse(int resCode, JSONObject res) {
-
-
-
+        Log.d(TAG, "onResponse()");
+        Log.d(TAG, ">" + resCode + ", "+ res);
     }
-
-    //    https://velog.io/@haero_kim/Android-AsyncTask-%EA%B0%80-%EB%96%A0%EB%82%98%EA%B0%84-%EC%9D%B4%EC%9C%A0
-    class BackgroundTask extends AsyncTask<Integer, Integer, Integer> {
-        @Override
-        protected Integer doInBackground(Integer... integers) {
-            for(int i = 0 ; i<10 ; i++){
-                Log.d(TAG, ">" + i);
-//                Toast.makeText(context, ">"+i, Toast.LENGTH_SHORT).show();
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            return 1;
-        }
-
-    }
-
-
 }

@@ -8,6 +8,10 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.hyundai.logSDK.HLog;
+import com.hyundai.logSDK.util.DBHelper;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,9 +24,6 @@ public class MainActivity extends AppCompatActivity {
 //        HLog.getInstance().setInit(this);
 //        LogManager.getInstance().setContext(this).toast();
 //        LogManager.getInstance().setContext(this).bgToast();
-
-
-
 
         Button btn1 = (Button) findViewById(R.id.btn1);
         btn1.setOnClickListener(new View.OnClickListener() {
@@ -66,6 +67,33 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Toast.makeText(getApplicationContext(), "btn5", Toast.LENGTH_SHORT).show();
                 HLog.d(getApplicationContext(), "LOG_TEST", "5>" + cnt++);
+            }
+        });
+
+        ((Button) findViewById(R.id.btn6)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "Network get()", Toast.LENGTH_SHORT).show();
+                HLog.httpDoGet(getApplicationContext(), "LOG_TEST","hello");
+            }
+        });
+
+        ((Button) findViewById(R.id.btn7)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "Network post()", Toast.LENGTH_SHORT).show();
+                HLog.httpDoPost(getApplicationContext(), "LOG_TEST","hello");
+            }
+        });
+
+        ((Button) findViewById(R.id.btn8)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "DB open()", Toast.LENGTH_SHORT).show();
+
+                DBHelper dbHelper = new DBHelper(getApplicationContext());
+                dbHelper.open();
+                dbHelper.create();
             }
         });
     }

@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class HLog implements HttpHelper.HttpListener {
 
-    private static String TAG = "LOG_SDK";
+    private static final String TAG = "LOG_SDK";
 
     private static HLog instance;
     private static Context context;
@@ -37,6 +37,11 @@ public class HLog implements HttpHelper.HttpListener {
     }
 
     private static void init(Context context){
+
+        if(null == context){
+            throw new RuntimeException("Context is null!");
+        }
+
         if(null == instance){
             instance = new HLog(context);
         }
@@ -112,7 +117,7 @@ public class HLog implements HttpHelper.HttpListener {
             e.printStackTrace();
         }
 
-        Log.d(TAG, "JSON:" + reqJson.toString());
+        Log.d(TAG, "JSON:" + reqJson);
         instance.httpHelper.setHttpListener(instance);
         instance.httpHelper.doPost(reqJson);
     }
@@ -127,10 +132,12 @@ public class HLog implements HttpHelper.HttpListener {
         dbHelper.insert(tag, text);
     }
 
+
     public static void show(){
 
-        init(context);
-        if(null == instance || null == instance.dbHelper) return; // 앱을 종료 후 show 부터 실행하면 null인 현상이 있음
+        if(null == instance || null == instance.dbHelper){
+            throw new RuntimeException("Context not found.");
+        }
 
         LogData hlog = new LogData();
         Cursor csr = instance.dbHelper.selectColumns();
@@ -140,8 +147,13 @@ public class HLog implements HttpHelper.HttpListener {
             String tag = csr.getString(2);
             String msg = csr.getString(3);
             hlog.setLog(id, dt, tag, msg);
-            Log.d(TAG, "hlog.show(): " + hlog.toString());
+            Log.d(TAG, "hlog.show(): " + hlog);
         }
+    }
+
+    public static void show(Context context){
+        init(context);
+        show();
     }
 
     public void toast(){

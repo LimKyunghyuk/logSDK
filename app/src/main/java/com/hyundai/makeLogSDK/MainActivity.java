@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getApplicationContext(), "send()", Toast.LENGTH_SHORT).show();
-                HLog.show();
+                HLog.show(getApplicationContext());
             }
         });
 

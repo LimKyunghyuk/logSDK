@@ -9,7 +9,6 @@ public class LogData {
     String logDt;
     String tag;
     String msg;
-    int result;
 
     public String getLogId() {
         return logId;
@@ -43,20 +42,11 @@ public class LogData {
         this.msg = msg;
     }
 
-    public int getResult() {
-        return result;
-    }
-
-    public void setResult(int result) {
-        this.result = result;
-    }
-
-    public void setLog(String logId, String logDt, String tag, String msg, int result){
+    public void setLog(String logId, String logDt, String tag, String msg){
         this.logId = logId;
         this.logDt = logDt;
         this.tag = tag;
         this.msg = msg;
-        this.result = result;
     }
 
     public JSONObject toJSON(){
@@ -81,7 +71,6 @@ public class LogData {
                 ", logDt='" + logDt + '\'' +
                 ", tag='" + tag + '\'' +
                 ", msg='" + msg + '\'' +
-                ", result='" + result + '\'' +
                 '}';
     }
 }

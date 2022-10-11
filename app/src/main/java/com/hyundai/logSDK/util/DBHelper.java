@@ -16,8 +16,6 @@ public class DBHelper extends DBConfig {
     private DatabaseHelper helper;
     private Context context;
 
-    private String logId;
-
     public DBHelper(Context context){
         this.context = context;
     }
@@ -42,7 +40,6 @@ public class DBHelper extends DBConfig {
         Date date = new Date();
 
         ContentValues values = new ContentValues();
-        values.put(LOG_ID, logId);
         values.put(LOG_DT, dateFormat.format(date));
         values.put(TAG, tag);
         values.put(MSG, contents);
@@ -51,6 +48,12 @@ public class DBHelper extends DBConfig {
 
     public Cursor selectColumns(){
         return db.query(TABLE_NAME, null, null, null, null, null, null);
+    }
+
+    public void deleteLog(String logId){
+
+        String query = "DELETE FROM " + TABLE_NAME + " WHERE LOG_ID = '" + logId + "';";
+        db.execSQL(query);
     }
 
     private class DatabaseHelper extends SQLiteOpenHelper {
@@ -69,13 +72,5 @@ public class DBHelper extends DBConfig {
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
             onCreate(db);
         }
-    }
-
-    public void setLogId(String logId){
-        this.logId = logId;
-    }
-
-    public String getLogId(){
-        return logId;
     }
 }

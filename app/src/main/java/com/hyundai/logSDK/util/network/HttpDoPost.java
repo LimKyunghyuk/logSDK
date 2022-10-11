@@ -56,7 +56,8 @@ public class HttpDoPost extends Thread{
             conn.setDoOutput(true);
             conn.setDoInput(true);
 
-            paramJson.toString();
+            Log.d(TAG, "input: " + paramJson.toString());
+
             try(OutputStream os = conn.getOutputStream()) {
                 byte[] input = paramJson.toString().getBytes("UTF-8");
                 os.write(input, 0, input.length);

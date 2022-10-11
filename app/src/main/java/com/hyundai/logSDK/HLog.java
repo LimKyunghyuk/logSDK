@@ -2,7 +2,6 @@ package com.hyundai.logSDK;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -13,9 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class HLog implements HttpHelper.HttpListener {
@@ -91,20 +88,20 @@ public class HLog implements HttpHelper.HttpListener {
 
         init(context);
 
-        if(null == instance || null == instance.dbHelper) return; // 앱을 종료 후 show 부터 실행하면 null인 현상이 있음
-
+        if(null == instance || null == instance.dbHelper) return; // 앱을 종료 후 send() 부터 실행하면 null인 현상이 있음
 
         JSONArray jsonArr = new JSONArray();
         Cursor csr = instance.dbHelper.selectColumns();
+
         while(csr.moveToNext()){
-            LogData hLog = new LogData();
+
             String id = csr.getString(0);
             String dt = csr.getString(1);
             String tag = csr.getString(2);
             String msg = csr.getString(3);
-            int result = csr.getInt(4);
-            hLog.setLog(id, dt, tag, msg, result);
 
+            LogData hLog = new LogData();
+            hLog.setLog(id, dt, tag, msg);
             jsonArr.put(hLog.toJSON());
         }
 
@@ -132,6 +129,7 @@ public class HLog implements HttpHelper.HttpListener {
 
     public static void show(){
 
+        init(context);
         if(null == instance || null == instance.dbHelper) return; // 앱을 종료 후 show 부터 실행하면 null인 현상이 있음
 
         LogData hlog = new LogData();
@@ -141,13 +139,10 @@ public class HLog implements HttpHelper.HttpListener {
             String dt = csr.getString(1);
             String tag = csr.getString(2);
             String msg = csr.getString(3);
-            int result = csr.getInt(4);
-            hlog.setLog(id, dt, tag, msg, result);
+            hlog.setLog(id, dt, tag, msg);
             Log.d(TAG, "hlog.show(): " + hlog.toString());
         }
     }
-
-
 
     public void toast(){
         Toast.makeText(context, "Hello", Toast.LENGTH_SHORT).show();
@@ -157,5 +152,24 @@ public class HLog implements HttpHelper.HttpListener {
     public void onResponse(int resCode, JSONObject res) {
         Log.d(TAG, "onResponse()");
         Log.d(TAG, ">" + resCode + ", "+ res);
+
+        try {
+            if(resCode != 200) return;
+            if(res != null && res.getInt("RES_CODE") != 200) return;
+
+            JSONArray logList = res.getJSONArray("LOG_LIST");
+
+            for(int i = 0 ; i < logList.length() ; i++){
+
+                JSONObject log = logList.getJSONObject(i);
+
+                if(log.getBoolean("RESULT")){
+                    String logId = log.getString("LOG_ID");
+                    instance.dbHelper.deleteLog(logId);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

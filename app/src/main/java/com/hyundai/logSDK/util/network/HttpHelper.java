@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class HttpHelper{
 
-    final String TAG = "CATCH_CALL";
+    final String TAG = "LOG_SDK";
     public String CALL_SEVER_URL = "http://yorsild.dothome.co.kr/call.php";
     public int TIME_OUT = 3000;
     private HttpListener receiver;

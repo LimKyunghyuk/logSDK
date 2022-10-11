@@ -93,10 +93,14 @@ public class HLog implements HttpHelper.HttpListener {
 
         init(context);
 
-        if(null == instance || null == instance.dbHelper) return; // 앱을 종료 후 send() 부터 실행하면 null인 현상이 있음
+        if(null == instance || null == instance.dbHelper){
+            throw new RuntimeException("Context not found.");
+        }
 
         JSONArray jsonArr = new JSONArray();
         Cursor csr = instance.dbHelper.selectColumns();
+
+        if(0 == csr.getCount()) return;
 
         while(csr.moveToNext()){
 
@@ -128,24 +132,27 @@ public class HLog implements HttpHelper.HttpListener {
         return 0;
     }
 
-    public void log(String tag, String text){
-        dbHelper.insert(tag, text);
-    }
-
-
     public static void show(){
 
         if(null == instance || null == instance.dbHelper){
             throw new RuntimeException("Context not found.");
         }
 
-        LogData hlog = new LogData();
         Cursor csr = instance.dbHelper.selectColumns();
+
+        if(0 == csr.getCount()){
+            Log.d(TAG, "No data found.");
+            return;
+        }
+
         while(csr.moveToNext()){
+
             String id = csr.getString(0);
             String dt = csr.getString(1);
             String tag = csr.getString(2);
             String msg = csr.getString(3);
+
+            LogData hlog = new LogData();
             hlog.setLog(id, dt, tag, msg);
             Log.d(TAG, "hlog.show(): " + hlog);
         }
@@ -154,10 +161,6 @@ public class HLog implements HttpHelper.HttpListener {
     public static void show(Context context){
         init(context);
         show();
-    }
-
-    public void toast(){
-        Toast.makeText(context, "Hello", Toast.LENGTH_SHORT).show();
     }
 
     @Override
